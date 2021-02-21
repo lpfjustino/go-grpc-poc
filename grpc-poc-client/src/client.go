@@ -52,12 +52,12 @@ func runGetMessages(client pb.ChatServiceClient) {
 	log.Println(response)
 }
 
-func runSendMessage(client pb.ChatServiceClient) {
+func sendMessage(client pb.ChatServiceClient, content string) {
 	log.Printf("Sending message")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	xesque := pb.ChatMessage{
-		Content: "QUE DELICIA",
+		Content: content,
 	}
 	response, err := client.SendMessage(ctx, &xesque)
 	if err != nil {
@@ -82,7 +82,7 @@ func listen(stream pb.ChatService_ConsumeMessagesClient) {
 	}
 }
 
-func runGetNMessages(client pb.ChatServiceClient) {
+func receiveNewMessages(client pb.ChatServiceClient) {
 	log.Printf("Receiving n messages")
 	stream, _ := client.ConsumeMessages(context.Background(), &empty.Empty{})
 
@@ -122,9 +122,13 @@ func main() {
 	client := pb.NewChatServiceClient(conn)
 
 	// runGetMessages(client)
-	// runSendMessage(client)
-	// runGetNMessages(client)
-	runMakeRequests(client)
+	// sendMessage(client)
+	// runMakeRequests(client)
+
+	sendMessage(client, "xa")
+	sendMessage(client, "blau")
+	receiveNewMessages(client)
+	receiveNewMessages(client)
 
 	time.Sleep(2 * time.Second)
 

@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"strconv"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
@@ -33,25 +32,30 @@ func (s *chatServer) GetMessages(context.Context, *empty.Empty) (*pb.ChatMessage
 
 func (s *chatServer) SendMessage(c context.Context, m *pb.ChatMessage) (*pb.ServerResponse, error) {
 	res := pb.ServerResponse{
-		Content: "TOP PARSA",
+		Content: "Received",
 	}
 	log.Printf("Sending message %v", m.Content)
-	// TODO
-	// s.messages = append(s.messages, m.Content)
+	s.messages = append(s.messages, m.Content)
 	return &res, nil
 }
 
 func (s *chatServer) ConsumeMessages(e *empty.Empty, stream pb.ChatService_ConsumeMessagesServer) error {
-	for i := 0; i < 10; i++ {
-		currentMessage := "Mensagem " + strconv.Itoa(i)
+	if len(s.messages) == 0 {
+		log.Printf("No new messages")
+		return nil
+	}
+
+	for _, message := range s.messages {
 		response := pb.ServerResponse{
-			Content: currentMessage,
+			Content: message,
 		}
 		if err := stream.Send(&response); err != nil {
-			log.Printf("Deu ruim " + err.Error())
+			log.Printf("Error on receiving message: " + err.Error())
 			return err
 		}
 	}
+	s.messages = []string{}
+
 	return nil
 }
 
@@ -68,18 +72,12 @@ func (s *chatServer) MakeRequests(stream pb.ChatService_MakeRequestsServer) erro
 
 		switch in.Action {
 		case pb.Action_LOGOUT:
-			response := wrapServerResponse("já vai, amore?")
+			response := wrapServerResponse("Going home, already?")
 			stream.Send(&response)
 		case pb.Action_SET_STATUS:
-			response := wrapServerResponse("mudei o status da sra")
+			response := wrapServerResponse("Status changed")
 			stream.Send(&response)
 		}
-
-		// for _, note := range s.routeNotes[key] {
-		// 	if err := stream.Send(note); err != nil {
-		// 		return err
-		// 	}
-		// }
 	}
 }
 
