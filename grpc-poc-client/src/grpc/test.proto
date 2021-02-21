@@ -8,29 +8,19 @@ option go_package = "justino.com/poc/grpc";
 
 // Interface exported by the server.
 service ChatService {
-  // A Bidirectional streaming RPC.
-  //
-  // Accepts a stream of RouteNotes sent while a route is being traversed,
-  // while receiving other RouteNotes (e.g. from other users).
   rpc MakeRequests(stream ClientRequest) returns (stream ServerResponse) {}
   
   rpc ConsumeMessages(google.protobuf.Empty) returns (stream ServerResponse) {}
   
-  // A simple RPC.
-  //
-  // Obtains the feature at a given position.
-  //
-  // A feature with an empty name is returned if there's no feature at the given
-  // position.
   rpc SendMessage(ChatMessage) returns (ServerResponse) {}
 
-  // A simple RPC.
-  //
-  // Obtains the feature at a given position.
-  //
-  // A feature with an empty name is returned if there's no feature at the given
-  // position.
   rpc GetMessages(google.protobuf.Empty) returns (ChatMessage) {}
+  
+  rpc GetLargePayload(google.protobuf.Empty) returns (LargePayload) {}
+}
+
+message LargePayload {
+  string content = 1;
 }
 
 message ChatMessage {

@@ -16,9 +16,9 @@ func GetLargePayload() {
 		os.Exit(1)
 	}
 
-	responseData, err := ioutil.ReadAll(response.Body)
+	// responseData, err := ioutil.ReadAll(response.Body)
+	_, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(responseData))
 }

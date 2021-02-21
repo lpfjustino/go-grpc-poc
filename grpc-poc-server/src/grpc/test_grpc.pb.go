@@ -19,26 +19,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
-	// A Bidirectional streaming RPC.
-	//
-	// Accepts a stream of RouteNotes sent while a route is being traversed,
-	// while receiving other RouteNotes (e.g. from other users).
 	MakeRequests(ctx context.Context, opts ...grpc.CallOption) (ChatService_MakeRequestsClient, error)
 	ConsumeMessages(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (ChatService_ConsumeMessagesClient, error)
-	// A simple RPC.
-	//
-	// Obtains the feature at a given position.
-	//
-	// A feature with an empty name is returned if there's no feature at the given
-	// position.
 	SendMessage(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*ServerResponse, error)
-	// A simple RPC.
-	//
-	// Obtains the feature at a given position.
-	//
-	// A feature with an empty name is returned if there's no feature at the given
-	// position.
 	GetMessages(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ChatMessage, error)
+	GetLargePayload(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*LargePayload, error)
 }
 
 type chatServiceClient struct {
@@ -130,30 +115,24 @@ func (c *chatServiceClient) GetMessages(ctx context.Context, in *empty.Empty, op
 	return out, nil
 }
 
+func (c *chatServiceClient) GetLargePayload(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*LargePayload, error) {
+	out := new(LargePayload)
+	err := c.cc.Invoke(ctx, "/grpc.ChatService/GetLargePayload", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServiceServer is the server API for ChatService service.
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
 type ChatServiceServer interface {
-	// A Bidirectional streaming RPC.
-	//
-	// Accepts a stream of RouteNotes sent while a route is being traversed,
-	// while receiving other RouteNotes (e.g. from other users).
 	MakeRequests(ChatService_MakeRequestsServer) error
 	ConsumeMessages(*empty.Empty, ChatService_ConsumeMessagesServer) error
-	// A simple RPC.
-	//
-	// Obtains the feature at a given position.
-	//
-	// A feature with an empty name is returned if there's no feature at the given
-	// position.
 	SendMessage(context.Context, *ChatMessage) (*ServerResponse, error)
-	// A simple RPC.
-	//
-	// Obtains the feature at a given position.
-	//
-	// A feature with an empty name is returned if there's no feature at the given
-	// position.
 	GetMessages(context.Context, *empty.Empty) (*ChatMessage, error)
+	GetLargePayload(context.Context, *empty.Empty) (*LargePayload, error)
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -172,6 +151,9 @@ func (UnimplementedChatServiceServer) SendMessage(context.Context, *ChatMessage)
 }
 func (UnimplementedChatServiceServer) GetMessages(context.Context, *empty.Empty) (*ChatMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
+}
+func (UnimplementedChatServiceServer) GetLargePayload(context.Context, *empty.Empty) (*LargePayload, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLargePayload not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 
@@ -269,6 +251,24 @@ func _ChatService_GetMessages_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChatService_GetLargePayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).GetLargePayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.ChatService/GetLargePayload",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).GetLargePayload(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -283,6 +283,10 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMessages",
 			Handler:    _ChatService_GetMessages_Handler,
+		},
+		{
+			MethodName: "GetLargePayload",
+			Handler:    _ChatService_GetLargePayload_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

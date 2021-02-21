@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 
@@ -15,6 +16,15 @@ import (
 var (
 	port = flag.Int("port", 10000, "The server port")
 )
+
+func (s *chatServer) GetLargePayload(context.Context, *empty.Empty) (*LargePayload, error) {
+	dat, err := ioutil.ReadFile("fixtures/1mb")
+	check(err)
+	res := LargePayload{
+		Content: string(dat),
+	}
+	return &res, nil
+}
 
 func (s *chatServer) GetMessages(context.Context, *empty.Empty) (*ChatMessage, error) {
 	res := ChatMessage{
@@ -77,6 +87,12 @@ func (s *chatServer) MakeRequests(stream ChatService_MakeRequestsServer) error {
 func wrapServerResponse(message string) ServerResponse {
 	return ServerResponse{
 		Content: message,
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
 	}
 }
 
