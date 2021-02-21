@@ -4,9 +4,11 @@ import (
 	"flag"
 
 	sv "justino.com/poc/grpc"
+	rest "justino.com/poc/rest"
 )
 
 func main() {
 	flag.Parse()
-	sv.ServerStartup()
+	go sv.ServerStartup()
+	rest.StartupRestServer()
 }
