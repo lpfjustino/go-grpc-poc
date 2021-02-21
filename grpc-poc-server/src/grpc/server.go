@@ -91,6 +91,7 @@ func newServer() *chatServer {
 	return s
 }
 
+// ServerStartup is an auxiliary function to run the server on background
 func ServerStartup() {
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
