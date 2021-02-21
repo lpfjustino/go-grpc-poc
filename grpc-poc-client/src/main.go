@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	grpc "justino.com/poc-client/grpc"
@@ -10,99 +9,39 @@ import (
 )
 
 var (
-	nAttempts = 10
+	nAttempts = 50
 )
 
-func testTiny(grpcClient grpc.ChatServiceClient) {
-	log.Println("testTiny")
-	start := time.Now()
+func testGettingPayload(grpcClient grpc.ChatServiceClient, arg string, size grpc.Size, description string) {
+	fmt.Printf("%v (%v):\n", description, arg)
+	restStart := time.Now()
 	for j := 0; j < nAttempts; j++ {
-		rest.GetPayload("1kb")
+		rest.GetPayload(arg)
 	}
-	duration := time.Since(start)
-	fmt.Println(duration)
+	restDuration := time.Since(restStart)
+	fmt.Printf("REST: %v \n", restDuration)
 
-	start = time.Now()
+	grpcStart := time.Now()
 	for i := 0; i < nAttempts; i++ {
-		grpc.RunGetPayload(grpcClient, grpc.Size_TINY)
+		grpc.RunGetPayload(grpcClient, size)
 	}
-	duration = time.Since(start)
-	fmt.Println(duration)
-}
+	grpcDuration := time.Since(grpcStart)
+	fmt.Printf("GRPC: %v \n", grpcDuration)
 
-func testSmall(grpcClient grpc.ChatServiceClient) {
-	log.Println("testSmall")
-	start := time.Now()
-	for j := 0; j < nAttempts; j++ {
-		rest.GetPayload("500kb")
+	if restDuration > grpcDuration {
+		fmt.Printf("GRPC was %v %% faster \n", 100*float64(restDuration.Milliseconds())/float64(grpcDuration.Milliseconds()))
+	} else {
+		fmt.Printf("Rest was %v %% faster \n", 100*float64(restDuration.Milliseconds())/float64(restDuration.Milliseconds()))
 	}
-	duration := time.Since(start)
-	fmt.Println(duration)
-
-	start = time.Now()
-	for i := 0; i < nAttempts; i++ {
-		grpc.RunGetPayload(grpcClient, grpc.Size_SMALL)
-	}
-	duration = time.Since(start)
-	fmt.Println(duration)
-}
-
-func testMedium(grpcClient grpc.ChatServiceClient) {
-	log.Println("testMedium")
-	start := time.Now()
-	for j := 0; j < nAttempts; j++ {
-		rest.GetPayload("1mb")
-	}
-	duration := time.Since(start)
-	fmt.Println(duration)
-
-	start = time.Now()
-	for i := 0; i < nAttempts; i++ {
-		grpc.RunGetPayload(grpcClient, grpc.Size_MEDIUM)
-	}
-	duration = time.Since(start)
-	fmt.Println(duration)
-}
-
-func testLarge(grpcClient grpc.ChatServiceClient) {
-	log.Println("testLarge")
-	start := time.Now()
-	for j := 0; j < nAttempts; j++ {
-		rest.GetPayload("10mb")
-	}
-	duration := time.Since(start)
-	fmt.Println(duration)
-
-	start = time.Now()
-	for i := 0; i < nAttempts; i++ {
-		grpc.RunGetPayload(grpcClient, grpc.Size_LARGE)
-	}
-	duration = time.Since(start)
-	fmt.Println(duration)
-}
-
-func testHuge(grpcClient grpc.ChatServiceClient) {
-	log.Println("testHuge")
-	start := time.Now()
-	for j := 0; j < nAttempts; j++ {
-		rest.GetPayload("100mb")
-	}
-	duration := time.Since(start)
-	fmt.Println(duration)
-
-	start = time.Now()
-	for i := 0; i < nAttempts; i++ {
-		grpc.RunGetPayload(grpcClient, grpc.Size_HUGE)
-	}
-	duration = time.Since(start)
-	fmt.Println(duration)
+	fmt.Println()
 }
 
 func main() {
 	grpcClient := grpc.StartupClient()
-	testTiny(grpcClient)
-	testSmall(grpcClient)
-	testMedium(grpcClient)
-	testLarge(grpcClient)
-	testHuge(grpcClient)
+
+	testGettingPayload(grpcClient, "1kb", grpc.Size_TINY, "testTiny")
+	testGettingPayload(grpcClient, "500kb", grpc.Size_SMALL, "testSmall")
+	testGettingPayload(grpcClient, "1mb", grpc.Size_MEDIUM, "testMedium")
+	testGettingPayload(grpcClient, "10mb", grpc.Size_LARGE, "testLarge")
+	testGettingPayload(grpcClient, "100mb", grpc.Size_HUGE, "testHuge")
 }
