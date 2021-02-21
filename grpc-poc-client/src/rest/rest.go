@@ -8,8 +8,8 @@ import (
 	"os"
 )
 
-func GetLargePayload() {
-	response, err := http.Get("http://localhost:10001/large-payload")
+func GetPayload(size string) {
+	response, err := http.Get("http://localhost:10001/payload/" + size)
 
 	if err != nil {
 		fmt.Print(err.Error())

@@ -17,10 +17,25 @@ var (
 	port = flag.Int("port", 10000, "The server port")
 )
 
-func (s *chatServer) GetLargePayload(context.Context, *empty.Empty) (*LargePayload, error) {
-	dat, err := ioutil.ReadFile("fixtures/1mb")
+func (s *chatServer) GetPayload(c context.Context, size *PayloadSize) (*Payload, error) {
+	var dat []byte
+	var err error
+
+	switch size.Size {
+	case Size_TINY:
+		dat, err = ioutil.ReadFile("fixtures/1kb")
+	case Size_SMALL:
+		dat, err = ioutil.ReadFile("fixtures/500kb")
+	case Size_MEDIUM:
+		dat, err = ioutil.ReadFile("fixtures/1mb")
+	case Size_LARGE:
+		dat, err = ioutil.ReadFile("fixtures/10mb")
+	case Size_HUGE:
+		dat, err = ioutil.ReadFile("fixtures/100mb")
+	}
+
 	check(err)
-	res := LargePayload{
+	res := Payload{
 		Content: string(dat),
 	}
 	return &res, nil
@@ -113,7 +128,10 @@ func ServerStartup() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	var opts []grpc.ServerOption
+	opts := []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(512 * 1024 * 1024 * 1024),
+		grpc.MaxSendMsgSize(512 * 1024 * 1024 * 1024),
+	}
 
 	grpcServer := grpc.NewServer(opts...)
 	RegisterChatServiceServer(grpcServer, newServer())

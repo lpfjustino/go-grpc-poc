@@ -18,12 +18,13 @@ var (
 	serverHostOverride = flag.String("server_host_override", "x.test.youtube.com", "The server name used to verify the hostname returned by the TLS handshake")
 )
 
-func RunGetLargePayload(client ChatServiceClient) {
+func RunGetPayload(client ChatServiceClient, size Size) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 	defer cancel()
-	_, err := client.GetLargePayload(ctx, &empty.Empty{})
+	desiredSize := PayloadSize{Size: size}
+	_, err := client.GetPayload(ctx, &desiredSize)
 	if err != nil {
-		log.Fatalf("%v.runGetLargePayload(_) = _, %v: ", client, err)
+		log.Fatalf("%v.runGetPayload(_) = _, %v: ", client, err)
 	}
 }
 
@@ -96,8 +97,10 @@ func runMakeRequests(client ChatServiceClient) {
 
 func StartupClient() ChatServiceClient {
 	flag.Parse()
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
+	opts := []grpc.DialOption{
+		grpc.WithInsecure(),
+		grpc.WithMaxMsgSize(512 * 1024 * 1024),
+	}
 
 	opts = append(opts, grpc.WithBlock())
 	conn, err := grpc.Dial(*serverAddr, opts...)

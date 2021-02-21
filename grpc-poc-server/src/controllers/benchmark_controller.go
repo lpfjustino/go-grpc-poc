@@ -6,5 +6,5 @@ import (
 )
 
 func MapRoutes(e *echo.Echo) {
-	e.GET("/large-payload", handlers.GetLargePayloadHandler)
+	e.GET("/payload/:size", handlers.GetPayloadHandler)
 }

@@ -23,7 +23,7 @@ type ChatServiceClient interface {
 	ConsumeMessages(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (ChatService_ConsumeMessagesClient, error)
 	SendMessage(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*ServerResponse, error)
 	GetMessages(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ChatMessage, error)
-	GetLargePayload(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*LargePayload, error)
+	GetPayload(ctx context.Context, in *PayloadSize, opts ...grpc.CallOption) (*Payload, error)
 }
 
 type chatServiceClient struct {
@@ -115,9 +115,9 @@ func (c *chatServiceClient) GetMessages(ctx context.Context, in *empty.Empty, op
 	return out, nil
 }
 
-func (c *chatServiceClient) GetLargePayload(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*LargePayload, error) {
-	out := new(LargePayload)
-	err := c.cc.Invoke(ctx, "/grpc.ChatService/GetLargePayload", in, out, opts...)
+func (c *chatServiceClient) GetPayload(ctx context.Context, in *PayloadSize, opts ...grpc.CallOption) (*Payload, error) {
+	out := new(Payload)
+	err := c.cc.Invoke(ctx, "/grpc.ChatService/GetPayload", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ type ChatServiceServer interface {
 	ConsumeMessages(*empty.Empty, ChatService_ConsumeMessagesServer) error
 	SendMessage(context.Context, *ChatMessage) (*ServerResponse, error)
 	GetMessages(context.Context, *empty.Empty) (*ChatMessage, error)
-	GetLargePayload(context.Context, *empty.Empty) (*LargePayload, error)
+	GetPayload(context.Context, *PayloadSize) (*Payload, error)
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -152,8 +152,8 @@ func (UnimplementedChatServiceServer) SendMessage(context.Context, *ChatMessage)
 func (UnimplementedChatServiceServer) GetMessages(context.Context, *empty.Empty) (*ChatMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }
-func (UnimplementedChatServiceServer) GetLargePayload(context.Context, *empty.Empty) (*LargePayload, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLargePayload not implemented")
+func (UnimplementedChatServiceServer) GetPayload(context.Context, *PayloadSize) (*Payload, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPayload not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 
@@ -251,20 +251,20 @@ func _ChatService_GetMessages_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChatService_GetLargePayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(empty.Empty)
+func _ChatService_GetPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PayloadSize)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServiceServer).GetLargePayload(ctx, in)
+		return srv.(ChatServiceServer).GetPayload(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.ChatService/GetLargePayload",
+		FullMethod: "/grpc.ChatService/GetPayload",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetLargePayload(ctx, req.(*empty.Empty))
+		return srv.(ChatServiceServer).GetPayload(ctx, req.(*PayloadSize))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -285,8 +285,8 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ChatService_GetMessages_Handler,
 		},
 		{
-			MethodName: "GetLargePayload",
-			Handler:    _ChatService_GetLargePayload_Handler,
+			MethodName: "GetPayload",
+			Handler:    _ChatService_GetPayload_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

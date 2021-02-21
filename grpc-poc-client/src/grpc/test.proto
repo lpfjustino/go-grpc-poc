@@ -16,11 +16,15 @@ service ChatService {
 
   rpc GetMessages(google.protobuf.Empty) returns (ChatMessage) {}
   
-  rpc GetLargePayload(google.protobuf.Empty) returns (LargePayload) {}
+  rpc GetPayload(PayloadSize) returns (Payload) {}
 }
 
-message LargePayload {
+message Payload {
   string content = 1;
+}
+
+message PayloadSize {
+  Size size = 1;
 }
 
 message ChatMessage {
@@ -39,4 +43,12 @@ message ClientRequest {
 enum Action {
   LOGOUT=0;
   SET_STATUS=1;
+}
+
+enum Size {
+  TINY=0;
+  SMALL=1;
+  MEDIUM=2;
+  LARGE=3;
+  HUGE=4;
 }
