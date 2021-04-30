@@ -34,20 +34,22 @@ func runGetMessages(client ChatServiceClient) {
 		log.Fatalf("%v.GetMessages(_) = _, %v: ", client, err)
 	}
 	log.Println(response)
+	log.Println("=========================")
 }
 
 func sendMessage(client ChatServiceClient, content string) {
 	log.Printf("Sending message")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	xesque := ChatMessage{
+	msg := ChatMessage{
 		Content: content,
 	}
-	response, err := client.SendMessage(ctx, &xesque)
+	response, err := client.SendMessage(ctx, &msg)
 	if err != nil {
 		log.Fatalf("%v.GetMessages(_) = _, %v: ", client, err)
 	}
 	log.Println(response)
+	log.Println("=========================")
 }
 
 func listen(stream ChatService_ConsumeMessagesClient) {
@@ -71,6 +73,9 @@ func receiveNewMessages(client ChatServiceClient) {
 	stream, _ := client.ConsumeMessages(context.Background(), &empty.Empty{})
 
 	go listen(stream)
+	time.Sleep(1 * time.Second)
+	log.Println("=========================")
+
 }
 
 func runMakeRequests(client ChatServiceClient) {
@@ -90,6 +95,7 @@ func runMakeRequests(client ChatServiceClient) {
 	}
 	stream.Send(&request)
 	time.Sleep(1 * time.Second)
+	log.Println("=========================")
 }
 
 func StartupClient() ChatServiceClient {
@@ -109,11 +115,10 @@ func StartupClient() ChatServiceClient {
 	return client
 }
 
-func runGRPCTests(client ChatServiceClient) {
-	runGetMessages(client)
-	runMakeRequests(client)
+func RunGRPCTests(client ChatServiceClient) {
 	sendMessage(client, "xa")
 	sendMessage(client, "blau")
+	runGetMessages(client)
 	receiveNewMessages(client)
-	receiveNewMessages(client)
+	runMakeRequests(client)
 }

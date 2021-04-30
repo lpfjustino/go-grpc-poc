@@ -12,6 +12,13 @@ var (
 	nAttempts = 50
 )
 
+func main() {
+	grpcClient := grpc.StartupClient()
+
+	grpc.RunGRPCTests(grpcClient)
+	// benchmark(grpcClient)
+}
+
 func testGettingPayload(grpcClient grpc.ChatServiceClient, arg string, size grpc.Size, description string) {
 	fmt.Printf("%v (%v):\n", description, arg)
 	restStart := time.Now()
@@ -36,9 +43,7 @@ func testGettingPayload(grpcClient grpc.ChatServiceClient, arg string, size grpc
 	fmt.Println()
 }
 
-func main() {
-	grpcClient := grpc.StartupClient()
-
+func benchmark(grpcClient grpc.ChatServiceClient) {
 	testGettingPayload(grpcClient, "1kb", grpc.Size_TINY, "testTiny")
 	testGettingPayload(grpcClient, "500kb", grpc.Size_SMALL, "testSmall")
 	testGettingPayload(grpcClient, "1mb", grpc.Size_MEDIUM, "testMedium")
